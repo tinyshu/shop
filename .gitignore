@@ -1,0 +1,22 @@
+# new_shop — 勿提交密钥与依赖
+node_modules/
+dist/
+unpackage/
+*.exe
+*.log
+server/log/
+server/uploads/
+web/dist/
+
+# 本地机密配置（从 *.example 复制）
+server/config.yaml
+web/.env.local
+web/.env.*.local
+**/*.pem
+**/cert/
+**/certs/
+
+.DS_Store
+.idea/
+.vscode/
+*.swp
