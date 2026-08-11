@@ -100,11 +100,11 @@ import Tabbar from '@/components/tabbar/tabbar.vue'
 import loginPop from '@/components/loginPop/loginPop.vue'
 import {getRecentlyPurchasedGoodsList, getRecentlyPurchasedGoodsListLoading} from '@/api/order';
 import GoodsList from '@/components/goodsList/goodsList.vue'
-import {getUser, getToken, setUser} from '@/store/storage.js'
+import {getToken} from '@/store/storage.js'
 import config from '@/config/config.js'
 import {addCart, deleteCartByIds} from "@/api/cart";
 import {getFavoritesListPage, getFavoritesListPageLoding, favorites} from "@/api/favorites";
-import { getUserAuditStatus } from '@/api/user';
+import { refreshUserAudit } from '@/utils/audit'
 export default {
     name: "quickPay",
     components: {
@@ -155,22 +155,16 @@ export default {
     onLoad() {
         this.token = getToken()
         if (this.token) {
-            let user = getUser()
-            if (user) {
-                if ( user.auditStatus === 1) {
-                    this.isAudit = true
-                }else {
-                    getUserAuditStatus().then(res => {
-                        if (res.data.auditStatus === 1) {
-                            this.isAudit = true
-                            user.auditStatus = 1
-                            setUser(user)
-                        }
-                    })
-                }
-            }
+            refreshUserAudit(this)
         }
 
+    },
+    onShow() {
+        this.token = getToken()
+        if (this.token) {
+            refreshUserAudit(this)
+            this.getRecentlyGoodsList(0)
+        }
     },
     onReady() {
         const windowHeight = uni.getSystemInfoSync().windowHeight
@@ -181,12 +175,6 @@ export default {
         this.windows_height = Number(uni.getSystemInfoSync().windowHeight) - 45 - 89;
     },
     mounted() {},
-    onShow() {
-        // 登录的情况下获取
-        if (this.token) {
-            this.getRecentlyGoodsList(0)
-        }
-    },
     methods: {
         async getRecentlyGoodsList(type) {
             const data = {}

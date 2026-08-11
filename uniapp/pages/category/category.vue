@@ -73,8 +73,8 @@ import {
 import config from '@/config/config.js'
 import GoodsList from '@/components/goodsList/goodsList.vue'
 import loginSuspend from '@/components/loginPop/loginSuspend.vue'
-import {getUser, getToken, setUser} from '@/store/storage.js'
-import { getUserAuditStatus } from '@/api/user';
+import {getToken} from '@/store/storage.js'
+import { refreshUserAudit } from '@/utils/audit'
 
 export default {
     components: {
@@ -117,24 +117,16 @@ export default {
 
     },
     onLoad() {
-        let user = getUser()
-        if (user) {
-            if ( user.auditStatus === 1) {
-                this.isAudit = true
-            }else {
-                getUserAuditStatus().then(res => {
-                    if (res.data.auditStatus === 1) {
-                        this.isAudit = true
-                        user.auditStatus = 1
-                        setUser(user)
-                    }
-                })
-            }
-        }
+        refreshUserAudit(this)
         this.init()
         const t = getToken()
         if (!t) {
             this.loginSuspendShow = true
+        }
+    },
+    onShow() {
+        if (getToken()) {
+            refreshUserAudit(this)
         }
     },
     onReady() {

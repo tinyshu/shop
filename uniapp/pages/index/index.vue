@@ -141,6 +141,9 @@
 		getUserInfo
 	} from "@/api/user";
 	import {
+		refreshUserAudit
+	} from "@/utils/audit";
+	import {
 		getOrderStatusCount
 	} from "@/api/order";
 	import {
@@ -191,22 +194,18 @@
 			let user = getUser()
 			if (user) {
 				let entry = getFirstEntry()
-				if (user.auditStatus === 1) {
-					this.isAudit = true
-				} else {
-					getUserAuditStatus().then(res => {
+				refreshUserAudit(this).then(ok => {
+					if (!ok && !entry) {
+						uni.navigateTo({
+							url: "/pages/my/memberInfo"
+						});
+					}
+				})
+				getUserAuditStatus().then(res => {
+					if (res.data) {
 						this.applyTime = res.data.applyTime
-						if (res.data.auditStatus === 1) {
-							this.isAudit = true
-							user.auditStatus = 1
-							setUser(user)
-						} else if (!entry) {
-							uni.navigateTo({
-								url: "/pages/my/memberInfo"
-							});
-						}
-					})
-				}
+					}
+				}).catch(() => {})
 			}
 			this.relationPhone = config.phone
 			this.freshing = false;
@@ -226,6 +225,11 @@
 			date.setMonth(date.getMonth() - 1)
 			this.getOrderStatusCountInfo(date)
 
+		},
+		onShow() {
+			if (getToken()) {
+				refreshUserAudit(this)
+			}
 		},
 		mounted() {
 			// 设置商品列表高度为页面高度

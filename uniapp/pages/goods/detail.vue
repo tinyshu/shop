@@ -118,12 +118,8 @@
 	} from "@/api/account.js";
 	import UviewUi from "../../uni_modules/uview-ui/components/uview-ui/uview-ui";
 	import {
-		getUser,
-		setUser
-	} from "@/store/storage";
-	import {
-		getUserAuditStatus
-	} from "@/api/user";
+		refreshUserAudit
+	} from "@/utils/audit";
 
 	export default {
 		components: {
@@ -171,21 +167,13 @@
 			if (!token) {
 				this.loginSuspendShow = true
 			}
-			let user = getUser()
-			if (user) {
-				if (user.auditStatus === 1) {
-					this.isAudit = true
-				} else {
-					getUserAuditStatus().then(res => {
-						if (res.data.auditStatus === 1) {
-							this.isAudit = true
-							user.auditStatus = 1
-							setUser(user)
-						}
-					})
-				}
-			}
+			refreshUserAudit(this)
 			this.getGoods()
+		},
+		onShow() {
+			if (getToken()) {
+				refreshUserAudit(this)
+			}
 		},
 		onReady() {},
 		mounted() {},

@@ -119,6 +119,7 @@ func (b *BaseApi) LoginWx(c *gin.Context) {
 
 // TokenNext 登录以后签发jwt
 func (b *BaseApi) TokenNext(c *gin.Context, user system.SysUser) {
+	user.AuditStatus = common.EffectiveAuditStatus(user.AuditStatus)
 	j := &utils.JWT{SigningKey: []byte(global.Config.JWT.SigningKey)} // 唯一签名
 	claims := j.CreateClaims(systemReq.BaseClaims{
 		UUID:        user.UUID,
@@ -434,7 +435,7 @@ func (b *BaseApi) SetUserInfo(c *gin.Context) {
 		ChangeCustomerName: user.ChangeCustomerName,
 		AuditRemark:        user.AuditRemark,
 	}
-	if user.AuditStatus == 1 {
+	if user.AuditStatus == system.AuditStatusPassed {
 		if user.ChangeContactName != "" {
 			userInfo.OriginContactName = user.ChangeContactName
 			userInfo.ChangeContactName = ""
@@ -498,7 +499,7 @@ func (b *BaseApi) SetSelfInfo(c *gin.Context) {
 		AuditStatus:        user.AuditStatus,
 	}
 
-	if user.AuditStatus == 2 || user.AuditStatus == 3 {
+	if user.AuditStatus == system.AuditStatusPending || user.AuditStatus == system.AuditStatusChanging {
 		info.ApplyTime = time.Now()
 	}
 	if info.HeaderImg != "" {
@@ -579,7 +580,7 @@ func (b *BaseApi) GetAuditStatus(c *gin.Context) {
 	resp := map[string]any{}
 	userId := utils.GetUserID(c)
 	if userId == 0 {
-		resp["auditStatus"] = 0
+		resp["auditStatus"] = system.AuditStatusNew
 		return
 	}
 	user, err := userService.GetAuditStatus(userId)
@@ -588,7 +589,7 @@ func (b *BaseApi) GetAuditStatus(c *gin.Context) {
 		response.FailWithMessage("重置失败"+err.Error(), c)
 		return
 	}
-	resp["auditStatus"] = user.AuditStatus
+	resp["auditStatus"] = common.EffectiveAuditStatus(user.AuditStatus)
 	resp["auditRemark"] = user.AuditRemark
 	resp["applyTime"] = user.ApplyTime
 

@@ -43,9 +43,7 @@ import { getCategoryListAll } from '@/api/category.js'
 import { getTagsListAll } from '@/api/tags.js'
 import { getGoodsPageList, getGoodsPageListLoading } from '@/api/goods.js'
 import GoodsList from '@/components/goodsList/goodsList.vue'
-import { getUser } from '@/store/storage.js'
-import { setUser } from "@/store/storage";
-import {getUserAuditStatus} from "@/api/user";
+import { refreshUserAudit } from '@/utils/audit'
 export default {
 	components: {
 		filterDropdown,
@@ -110,21 +108,11 @@ export default {
 		if (option.tagsId) {
 			this.tagsId = option.tagsId
 		}
-        let user = getUser()
-        if (user) {
-            if ( user.auditStatus === 1) {
-                this.isAudit = true
-            }else {
-                getUserAuditStatus().then(res => {
-                    if (res.data.auditStatus === 1) {
-                        this.isAudit = true
-                        user.auditStatus = 1
-                        setUser(user)
-                    }
-                })
-            }
-        }
+        refreshUserAudit(this)
 		this.init()
+	},
+	onShow() {
+		refreshUserAudit(this)
 	},
 	mounted() {
 		// 设置商品列表高度为页面高度

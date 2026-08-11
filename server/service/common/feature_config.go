@@ -14,6 +14,19 @@ const (
 	KeyCourierMode = "feature.courier_mode" // delivery=城配；courier=快递
 )
 
+// UserAuditRequired 是否启用 C 端用户审核（feature.user_audit）。缺键默认 false=B2C 免审。
+func UserAuditRequired() bool {
+	return FeatureEnabled(KeyUserAudit, false)
+}
+
+// EffectiveAuditStatus 对前端/JWT 暴露的审核态：免审时恒为已通过。
+func EffectiveAuditStatus(stored int8) int8 {
+	if !UserAuditRequired() {
+		return system.AuditStatusPassed
+	}
+	return stored
+}
+
 // FeatureEnabled 读取功能开关。缺键、禁用、非法值时返回 defaultEnabled。
 func FeatureEnabled(key string, defaultEnabled bool) bool {
 	raw, ok := readFeatureValue(key)

@@ -6,6 +6,7 @@ import (
 	"fresh-shop/server/model/account"
 	sysReq "fresh-shop/server/model/system/request"
 	"fresh-shop/server/model/wechat/request"
+	"fresh-shop/server/service/common"
 	"go.uber.org/zap"
 	"time"
 
@@ -45,6 +46,10 @@ func (userService *UserService) LoginWx(req request.LoginReq) (user *system.SysU
 			AuthorityId: 1000, // 1000 普通用户
 		})
 		nickName := "用户" + d.PhoneNumber[len(d.PhoneNumber)-4:]
+		auditStatus := system.AuditStatusNew
+		if !common.UserAuditRequired() {
+			auditStatus = system.AuditStatusPassed // B2C 免审：注册即通过
+		}
 		u = system.SysUser{
 			Username:    d.PhoneNumber,
 			NickName:    nickName,
@@ -54,7 +59,7 @@ func (userService *UserService) LoginWx(req request.LoginReq) (user *system.SysU
 			Enable:      1,
 			Phone:       d.PhoneNumber,
 			OpenId:      req.OpenId,
-			AuditStatus: user.AuditStatus,
+			AuditStatus: auditStatus,
 		}
 		regUser, err := userService.Register(u)
 		user = &regUser
@@ -69,8 +74,27 @@ func (userService *UserService) LoginWx(req request.LoginReq) (user *system.SysU
 		}
 		// 用户存在，进行登录
 		user, err = userService.LoginByPhone(&u)
+		if err != nil {
+			return user, err
+		}
+		userService.ensureB2CAuditPassed(user)
 	}
 	return user, err
+}
+
+// ensureB2CAuditPassed 免审模式下将当前用户库内审核态回写为已通过，并同步内存字段。
+func (userService *UserService) ensureB2CAuditPassed(user *system.SysUser) {
+	if user == nil || common.UserAuditRequired() {
+		return
+	}
+	if user.AuditStatus == system.AuditStatusPassed {
+		return
+	}
+	if err := global.DB.Model(&system.SysUser{}).Where("id = ?", user.ID).Update("audit_status", system.AuditStatusPassed).Error; err != nil {
+		global.Log.Error("免审回写 audit_status 失败", zap.Uint("userId", user.ID), zap.Error(err))
+		return
+	}
+	user.AuditStatus = system.AuditStatusPassed
 }
 
 func (userService *UserService) Register(u system.SysUser) (userInter system.SysUser, err error) {

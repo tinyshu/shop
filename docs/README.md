@@ -16,7 +16,7 @@
 | 文档 | 说明 |
 |------|------|
 | [phase2-module-roadmap.md](./phase2-module-roadmap.md) | **二次开发细切片顺序、过关标准、与 todo-gaps 映射** ← 阶段二从这里推进 |
-| [features/industry-config/](./features/industry-config/) | M0 行业开关（v0.1.0 已实现；下一刀 M0-2 / M1） |
+| [features/industry-config/](./features/industry-config/) | M0 行业开关（v0.1.0 / v0.2.0 已实现；下一刀 M0-3 / M1） |
 
 ## 学习路线
 

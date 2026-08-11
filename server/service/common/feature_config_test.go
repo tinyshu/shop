@@ -1,6 +1,10 @@
 package common
 
-import "testing"
+import (
+	"testing"
+
+	"fresh-shop/server/model/system"
+)
 
 func TestParseFeatureBool(t *testing.T) {
 	cases := []struct {
@@ -25,6 +29,16 @@ func TestParseFeatureBool(t *testing.T) {
 		if en != c.enabled || ok != c.ok {
 			t.Fatalf("parseFeatureBool(%q)=(%v,%v) want (%v,%v)", c.in, en, ok, c.enabled, c.ok)
 		}
+	}
+}
+
+func TestEffectiveAuditStatusWithoutDB(t *testing.T) {
+	// 无 DB 时 UserAuditRequired 为 false → 生效态恒为已通过
+	if got := EffectiveAuditStatus(system.AuditStatusNew); got != system.AuditStatusPassed {
+		t.Fatalf("EffectiveAuditStatus(New)=%d want Passed when audit not required", got)
+	}
+	if got := EffectiveAuditStatus(system.AuditStatusPending); got != system.AuditStatusPassed {
+		t.Fatalf("EffectiveAuditStatus(Pending)=%d want Passed when audit not required", got)
 	}
 }
 

@@ -33,7 +33,7 @@ type SysUser struct {
 	ChangeContactName  string    `json:"changeContactName" gorm:"column:change_contact_name;comment:联系人姓名修改待审核"`                        // 联系人姓名修改待审核
 	OriginCustomerName string    `json:"originCustomerName" gorm:"column:origin_customer_name;comment:客户名称、公司名称"`                       // 客户名称、公司名称
 	ChangeCustomerName string    `json:"changeCustomerName" gorm:"column:change_customer_name;comment:客户名称、公司名称待审核"`                    // 客户名称、公司名称待审核
-	AuditStatus        int8      `json:"auditStatus" gorm:"column:audit_status;default:0;comment:审核状态 0新注册未填写信息 1已通过 2已填写未审核 3修改信息待审核"` // 审核状态 0新注册未填写信息 1已通过 2已填写未审核 3修改信息待审核 4已拒绝
+	AuditStatus        int8      `json:"auditStatus" gorm:"column:audit_status;default:0;comment:审核状态 见 AuditStatus* 常量"` // 审核状态：AuditStatusNew/Passed/Pending/Changing/Rejected
 	AuditRemark        string    `json:"auditRemark" gorm:"column:audit_remark;comment:审核备注"`                                           // 审核备注
 	ApplyTime          time.Time `json:"applyTime" gorm:"column:apply_time;comment:审核时间"`
 
