@@ -95,6 +95,18 @@ func (s *WechatService) NotifyLogic(req *notify.PaidResult) error {
 		global.SugarLog.Errorf(log+"订单状态不正确, Status：%d \n", *order.Status)
 		return errors.New("订单状态不正确")
 	}
+	if req.TotalFee == nil {
+		global.SugarLog.Errorf(log + "回调金额 TotalFee 为空 \n")
+		return errors.New("回调金额为空")
+	}
+	debug := global.Config.WechatPay.Debug
+	notifyFen := int64(*req.TotalFee)
+	if !NotifyAmountMatches(order.Total, notifyFen, debug) {
+		expectedFen, _ := ExpectedPayFen(order.Total, debug)
+		global.SugarLog.Errorf(log+"金额不符 expectedFen=%d notifyFen=%d orderTotal=%.2f debug=%v \n",
+			expectedFen, notifyFen, order.Total, debug)
+		return errors.New("支付金额与订单不符")
+	}
 	finishStr := fmt.Sprintf("%.2f", float64(*req.TotalFee)/100)
 	finish, err := strconv.ParseFloat(finishStr, 64)
 	if err != nil {

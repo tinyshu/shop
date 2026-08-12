@@ -194,4 +194,4 @@
 
 **阶段二进行中**：产品代码已在 `new_shop/server|web|uniapp`。见 [根 README](../README.md)、[debrand-checklist.md](./debrand-checklist.md)、[config-isolation.md](./config-isolation.md)。
 
-**按模块细切片推进**（顺序、过关标准、缺口映射）：[phase2-module-roadmap.md](./phase2-module-roadmap.md)。**M0-1 / M0-2 已完成**；下一刀建议 M0-3 或 M1-1（PAY-02）。
+**按模块细切片推进**（顺序、过关标准、缺口映射）：[phase2-module-roadmap.md](./phase2-module-roadmap.md)。**M1-1 已完成**；下一刀建议 M1-2（PAY-03）或 M0-3。
