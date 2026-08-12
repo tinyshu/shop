@@ -213,3 +213,12 @@ wechatPay:
   certPath: '' # 证书
   keyPath: '' # 秘钥
   debug: false
+  # 掉单查单补偿（PAY-01）；测试建议 enable=false，用管理端对单笔同步
+  compensate:
+    enable: false
+    spec: '@every 5m'
+    minAgeMinutes: 5
+    batchSize: 20
+    maxQueryPerOrder: 3   # 测试宜小；生产可调大或 0=不限制
+    mock: false           # true=不调微信，查单结果视为未支付
+    adminSyncEnable: true

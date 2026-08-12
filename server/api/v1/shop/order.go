@@ -17,6 +17,7 @@ type OrderApi struct {
 }
 
 var orderService = service.ServiceGroupApp.ShopServiceGroup.OrderService
+var wechatService = service.ServiceGroupApp.WechatServiceGroup.WechatService
 
 // CreateOrder 创建待支付订单 Order
 // @Tags Order
@@ -197,6 +198,33 @@ func (orderApi *OrderApi) BatchSettlement(c *gin.Context) {
 	} else {
 		response.OkWithMessage("更新成功", c)
 	}
+}
+
+// SyncWechatPay 管理端按订单查微信并补单（PAY-01）
+// @Tags Order
+// @Summary 同步微信支付状态
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body object true "orderId 或 orderSn"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"操作成功"}"
+// @Router /order/syncWechatPay [post]
+func (orderApi *OrderApi) SyncWechatPay(c *gin.Context) {
+	var req struct {
+		OrderId uint   `json:"orderId"`
+		OrderSn string `json:"orderSn"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	result, err := wechatService.SyncWechatPayByOrder(req.OrderId, req.OrderSn)
+	if err != nil {
+		global.Log.Error("同步微信支付失败!", zap.Error(err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData(result, c)
 }
 
 // FindOrder 用id查询Order

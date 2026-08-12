@@ -22,6 +22,7 @@ func (s *OrderRouter) InitOrderRouter(Router *gin.RouterGroup) {
 		orderRouter.DELETE("deleteOrderByIds", orderApi.DeleteOrderByIds) // 批量删除 Order
 		orderRouter.PUT("updateOrder", orderApi.UpdateOrder)              // 更新 Order
 		orderRouter.POST("batchSettlement", orderApi.BatchSettlement)     // 更新 Order
+		orderRouter.POST("syncWechatPay", orderApi.SyncWechatPay)         // 管理端同步微信支付状态（掉单补单）
 	}
 	{
 		orderRouterWithoutRecord.GET("findOrder", orderApi.FindOrder)                             // 根据ID获取Order
