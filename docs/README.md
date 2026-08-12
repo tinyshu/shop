@@ -16,8 +16,9 @@
 | 文档 | 说明 |
 |------|------|
 | [phase2-module-roadmap.md](./phase2-module-roadmap.md) | **二次开发细切片顺序、过关标准、与 todo-gaps 映射** ← 阶段二从这里推进 |
-| [features/industry-config/](./features/industry-config/) | M0 行业开关（v0.1.0 / v0.2.0 已实现） |
+| [features/industry-config/](./features/industry-config/) | M0 行业开关（v0.1.0～**v0.3.0 管理端** 已实现） |
 | [features/payment/](./features/payment/) | M1 支付：v0.1.0 / **v0.2.0 已实现**（条件更新+掉单查单） |
+| [features/fulfillment/](./features/fulfillment/) | M2 履约：v0.1.0 **已实现**（人工标记退款完成） |
 
 ## 学习路线
 

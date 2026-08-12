@@ -23,6 +23,7 @@ func (s *OrderRouter) InitOrderRouter(Router *gin.RouterGroup) {
 		orderRouter.PUT("updateOrder", orderApi.UpdateOrder)              // 更新 Order
 		orderRouter.POST("batchSettlement", orderApi.BatchSettlement)     // 更新 Order
 		orderRouter.POST("syncWechatPay", orderApi.SyncWechatPay)         // 管理端同步微信支付状态（掉单补单）
+		orderRouter.POST("markRefundDone", orderApi.MarkRefundDone)       // 人工标记退款完成（FUL-06）
 	}
 	{
 		orderRouterWithoutRecord.GET("findOrder", orderApi.FindOrder)                             // 根据ID获取Order

@@ -194,4 +194,4 @@
 
 **阶段二进行中**：产品代码已在 `new_shop/server|web|uniapp`。见 [根 README](../README.md)、[debrand-checklist.md](./debrand-checklist.md)、[config-isolation.md](./config-isolation.md)。
 
-**按模块细切片推进**：[phase2-module-roadmap.md](./phase2-module-roadmap.md)。**M1-1 / payment v0.2.0 已完成**（金额校验 + 条件更新 + 掉单查单）。
+**按模块细切片推进**：[phase2-module-roadmap.md](./phase2-module-roadmap.md)。**M0（含 M0-3）与 payment v0.2.0 已完成**；PAY-04/05 暂缓。

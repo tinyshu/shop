@@ -225,6 +225,14 @@
               @click="showOrderShipment(scope.row, 'update')"
             >确认收货
             </el-button>
+            <el-button
+              v-if="scope.row.status > 0 && scope.row.statusRefund !== 2"
+              type="warning"
+              link
+              class="table-button"
+              @click="markRefundDoneFunc(scope.row)"
+            >标记退款完成
+            </el-button>
             <el-button type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -421,7 +429,8 @@ import {
   deleteOrder,
   updateOrder,
   findOrder,
-  getOrderList
+  getOrderList,
+  markRefundDone
 } from '@/api/order'
 
 import { getUserDeliveryAllList } from '@/api/userDelivery'
@@ -559,6 +568,25 @@ const deleteRow = (row) => {
   }).then(() => {
     deleteOrderFunc(row)
   })
+}
+
+// 标记退款完成（须已在微信商户平台退款）
+const markRefundDoneFunc = (row) => {
+  ElMessageBox.confirm(
+    '请确认已在微信商户平台完成退款。本操作仅将系统订单标记为已退款，不会向微信发起退款。',
+    '标记退款完成',
+    {
+      confirmButtonText: '已退款，确认标记',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(async() => {
+    const res = await markRefundDone({ orderId: row.ID })
+    if (res.code === 0) {
+      ElMessage.success(res.data?.action === 'already_done' ? '订单已是已退款状态' : '已标记退款完成')
+      getTableData()
+    }
+  }).catch(() => {})
 }
 
 // 行为控制标记（弹窗内部需要增还是改）

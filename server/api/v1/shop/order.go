@@ -227,6 +227,32 @@ func (orderApi *OrderApi) SyncWechatPay(c *gin.Context) {
 	response.OkWithData(result, c)
 }
 
+// MarkRefundDone 管理端标记退款完成（商户平台人工退款后的状态闭环）
+// @Tags Order
+// @Summary 标记退款完成
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body object true "orderId"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"操作成功"}"
+// @Router /order/markRefundDone [post]
+func (orderApi *OrderApi) MarkRefundDone(c *gin.Context) {
+	var req struct {
+		OrderId uint `json:"orderId"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	result, err := orderService.MarkRefundDone(req.OrderId)
+	if err != nil {
+		global.Log.Error("标记退款完成失败!", zap.Error(err))
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData(result, c)
+}
+
 // FindOrder 用id查询Order
 // @Tags Order
 // @Summary 用id查询Order

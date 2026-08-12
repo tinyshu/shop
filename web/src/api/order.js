@@ -127,3 +127,19 @@ export const batchSettlement = (data) => {
     data
   })
 }
+
+// @Tags Order
+// @Summary 标记退款完成（商户平台人工退款后）
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body object true "orderId"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"操作成功"}"
+// @Router /order/markRefundDone [post]
+export const markRefundDone = (data) => {
+  return service({
+    url: '/order/markRefundDone',
+    method: 'post',
+    data
+  })
+}
