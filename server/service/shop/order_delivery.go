@@ -17,26 +17,33 @@ import (
 type OrderDeliveryService struct {
 }
 
-// CreateOrderDelivery 创建OrderDelivery记录
+// CreateOrderDelivery 创建OrderDelivery记录（条件更新：仅待发货且未取消）
 // Author [dalefeng](https://github.com/dalefeng)
 func (orderDeliveryService *OrderDeliveryService) CreateOrderDelivery(orderDelivery shop.OrderDelivery) (err error) {
-	var order shop.Order
-	err = global.DB.Where("id = ? and status = 1 and status_cancel = 0", orderDelivery.OrderId).First(&order).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		global.SugarLog.Errorf("获取订单信息失败 orderId:%d, error: %v", order.ID, err)
-		return err
+	if orderDelivery.OrderId == nil || *orderDelivery.OrderId == 0 {
+		return errors.New("订单id参数错误")
 	}
-	order.Status = utils.Pointer(2)
-	order.ShipmentTime = utils.Pointer(time.Now()) //发货时间
+	orderId := *orderDelivery.OrderId
+	now := time.Now()
 	err = global.DB.Transaction(func(tx *gorm.DB) error {
-		if txErr := tx.Save(&order).Error; txErr != nil {
-			return txErr
+		res := tx.Model(&shop.Order{}).
+			Where("id = ? AND status = ? AND status_cancel = ?", orderId, OrderStatusPaid, StatusCancelNone).
+			Updates(map[string]interface{}{
+				"status":        OrderStatusShipped,
+				"shipment_time": now,
+			})
+		if res.Error != nil {
+			return res.Error
 		}
-		err = tx.Create(&orderDelivery).Error
-		if err != nil {
-			return err
+		if res.RowsAffected == 0 {
+			var again shop.Order
+			if qErr := tx.Where("id = ?", orderId).First(&again).Error; errors.Is(qErr, gorm.ErrRecordNotFound) {
+				return errors.New("订单不存在")
+			}
+			global.SugarLog.Errorf("发货条件更新未影响行 orderId:%d", orderId)
+			return errors.New("订单状态不允许发货")
 		}
-		return nil
+		return tx.Create(&orderDelivery).Error
 	})
 	return
 }

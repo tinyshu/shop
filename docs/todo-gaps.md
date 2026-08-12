@@ -35,7 +35,7 @@
 | FUL-02 | 小程序确认收货 API 对齐 | 前端打 `/order/confirmOrder`，后端无此路由 | P1 | 应对齐到 `PUT /orderDelivery/updateOrderDelivery` |
 | FUL-03 | `OrderService.OrderDeliver` 空实现 | 发货实际走 delivery | P2 | 删或转发，避免误用 |
 | FUL-04 | 快递单号等通用物流字段 | 现为配送员城配模型 | P2 | 按客户行业开关 |
-| FUL-05 | **发货 / 取消竞态**（TOCTOU） | 查条件与更新不在同一原子操作 | **P1** | 见下方专节；可用乐观锁 `version` |
+| FUL-05 | **发货 / 取消竞态**（TOCTOU） | **v0.2.0 已做**（条件更新） | **P1** | features/fulfillment/v0.2.0 |
 | FUL-06 | **「标记退款完成」专用接口**（人工打款后回写状态） | **v0.1.0 已做** | **P1** | features/fulfillment/v0.1.0 |
 
 ---

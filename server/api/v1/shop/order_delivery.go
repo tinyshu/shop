@@ -39,7 +39,7 @@ func (orderDeliveryApi *OrderDeliveryApi) CreateOrderDelivery(c *gin.Context) {
 	}
 	if err := orderDeliveryService.CreateOrderDelivery(orderDelivery); err != nil {
 		global.Log.Error("发货失败!", zap.Error(err))
-		response.FailWithMessage("发货失败", c)
+		response.FailWithMessage(err.Error(), c)
 	} else {
 		response.OkWithMessage("发货成功", c)
 	}

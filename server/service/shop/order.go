@@ -328,25 +328,35 @@ func (orderService *OrderService) DeleteOrder(order shop.Order) (err error) {
 	return err
 }
 
-// CancelOrder 取消订单
+// CancelOrder 取消订单（条件更新：仅未发货且未取消）
 // Author [dalefeng](https://github.com/dalefeng)
 func (orderService *OrderService) CancelOrder(order shop.Order) (err error) {
-	cancelType := 1 // 默认用户取消
-	if order.StatusCancel != nil && *order.StatusCancel > 1 {
-		cancelType = *order.StatusCancel
-	}
-	if errors.Is(global.DB.Where("id = ?", order.ID).First(&order).Error, gorm.ErrRecordNotFound) {
+	cancelType := resolveCancelType(order.StatusCancel)
+	var exist shop.Order
+	if errors.Is(global.DB.Where("id = ?", order.ID).First(&exist).Error, gorm.ErrRecordNotFound) {
 		return errors.New("订单不存在")
 	}
-	// 发货 收货状态不允许取消
-	if *order.Status >= 2 {
+	// 如果订单已支付需要进行退款（本版不调微信、不回库存）
+	res := global.DB.Model(&shop.Order{}).
+		Where("id = ? AND status < ? AND status_cancel = ?", order.ID, OrderStatusShipped, StatusCancelNone).
+		Updates(map[string]interface{}{
+			"status_cancel": cancelType,
+			"cancel_time":   time.Now(),
+		})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
 		return errors.New("订单不允许取消")
 	}
-	// 如果订单已支付需要进行退款
-	order.StatusCancel = &cancelType
-	order.CancelTime = utils.Pointer(time.Now())
-	err = global.DB.Where("id = ?", order.ID).Updates(&order).Error
-	return err
+	return nil
+}
+
+func resolveCancelType(req *int) int {
+	if req != nil && *req > StatusCancelUser {
+		return *req
+	}
+	return StatusCancelUser // 默认用户取消
 }
 
 // DeleteOrderByIds 批量删除Order记录
