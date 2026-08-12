@@ -32,7 +32,7 @@
 |----|----|------|------------|------|
 | FUL-01 | 售后：申请 → `status_refund` → 微信退款 → 回库存 | CRUD 脚手架 | **P1** | 与 PAY-05 同一能力 |
 | FUL-06 | **人工退款后「标记退款完成」专用接口** | **v0.1.0 已做** | **P1**（人工退方案标配） | features/fulfillment/v0.1.0 |
-| FUL-02 | 小程序确认收货 API 对齐 | 前端打 `/order/confirmOrder`，后端无此路由 | P1 | 应对齐到 `PUT /orderDelivery/updateOrderDelivery` |
+| FUL-02 | 小程序确认收货 API 对齐 | **v0.3.0 已做**：`POST /order/confirmOrder` | P1 | features/fulfillment/v0.3.0；语义对齐收货，C 端不走 Save 发货单 |
 | FUL-03 | `OrderService.OrderDeliver` 空实现 | 发货实际走 delivery | P2 | 删或转发，避免误用 |
 | FUL-04 | 快递单号等通用物流字段 | 现为配送员城配模型 | P2 | 按客户行业开关 |
 | FUL-05 | **发货 / 取消竞态**（TOCTOU） | **v0.2.0 已做**（条件更新） | **P1** | features/fulfillment/v0.2.0 |
@@ -105,6 +105,7 @@
 | GEN-01 | 多规格购物车/下单 | `spec_item_id` 常写 0 | 按客户 |
 | GEN-02 | 去冻品品牌 / 配置隔离 | 阶段二脚手架 | **脚手架已做**（见 debrand / config-isolation） |
 | GEN-03 | 用户审核 `audit_status` 可开关 | 小 B 特色 | 按客户 |
+| GEN-04 | `order_sn` 无 UNIQUE；C 端订单操作多用自增 `id` | 迁移重排 id 可能错单 | P2 | [order-id-vs-sn.md](./order-id-vs-sn.md) |
 | AUTH-01 | **`session_key` 不返回客户端** | `code2Session` 把 key 回给 UniApp，`loginWx` 再回传 | **P1**（登录安全） | 见下方专节 |
 | AUTH-02 | **LoginWx 查用户：phone 索引 / 或 openid 方案** | 按 `phone` 查且无索引、无唯一；并发可重复用户 | **P1** | 见下方专节 |
 

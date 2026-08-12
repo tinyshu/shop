@@ -2,16 +2,14 @@ package shop
 
 import (
 	"errors"
+	"time"
+
 	"fresh-shop/server/global"
-	"fresh-shop/server/model/business"
 	"fresh-shop/server/model/common/request"
 	"fresh-shop/server/model/shop"
 	shopReq "fresh-shop/server/model/shop/request"
-	sysModel "fresh-shop/server/model/system"
-	"fresh-shop/server/service/common"
-	"fresh-shop/server/utils"
+
 	"gorm.io/gorm"
-	"time"
 )
 
 type OrderDeliveryService struct {
@@ -62,59 +60,34 @@ func (orderDeliveryService *OrderDeliveryService) DeleteOrderDeliveryByIds(ids r
 	return err
 }
 
-// UpdateOrderDelivery 订单收货
-// Author [dalefeng](https://github.com/dalefeng)
+// UpdateOrderDelivery 订单收货（管理端）。有 receiptTime 时条件更新订单 status 2→3。
 func (orderDeliveryService *OrderDeliveryService) UpdateOrderDelivery(orderDelivery shop.OrderDelivery) (err error) {
+	if orderDelivery.OrderId == nil || *orderDelivery.OrderId == 0 {
+		return errors.New("订单id参数错误")
+	}
+	if orderDelivery.ReceiptTime == nil {
+		return global.DB.Save(&orderDelivery).Error
+	}
 	var order shop.Order
-	err = global.DB.Where("id = ? and status = 2 and status_cancel = 0", orderDelivery.OrderId).First(&order).Error
-	if err != nil {
-		global.SugarLog.Errorf("获取订单信息失败 orderId:%d, error: %v", orderDelivery.OrderId, err)
-		return err
-	}
-	var user sysModel.SysUser
-	if err = global.DB.Where("id = ?", order.UserId).First(&user).Error; err != nil {
-		global.SugarLog.Errorf("获取用户信息失败 userId:%d, error: %v", order.UserId, err)
-		return err
-	}
-	var deliver business.UserDelivery
-	if orderDelivery.DeliveryId != nil && *orderDelivery.DeliveryId > 0 {
-		err = global.DB.Where("id = ?", orderDelivery.DeliveryId).First(&deliver).Error
+	if err = global.DB.Where("id = ?", *orderDelivery.OrderId).First(&order).Error; err != nil {
+		global.SugarLog.Errorf("获取订单信息失败 orderId:%d, error: %v", *orderDelivery.OrderId, err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			global.SugarLog.Errorf("获取送货员信息失败 DeliveryId:%d, error: %v", orderDelivery.DeliveryId, err)
-			return err
+			return errors.New("订单不存在")
 		}
-		deliver.DeliverCount = utils.Pointer(*deliver.DeliverCount + 1)
+		return err
 	}
-	if orderDelivery.ReceiptTime != nil {
-		order.Status = utils.Pointer(3)
-		order.ReceiveTime = orderDelivery.ReceiptTime
+	if order.StatusRefund != nil && *order.StatusRefund == StatusRefundDone {
+		return errors.New("订单已退款，不可确认收货")
 	}
-	err = global.DB.Transaction(func(tx *gorm.DB) error {
-		if txErr := tx.Save(&order).Error; txErr != nil {
+	return global.DB.Transaction(func(tx *gorm.DB) error {
+		if txErr := completeReceive(tx, order, *orderDelivery.ReceiptTime); txErr != nil {
 			return txErr
 		}
-		// 保存收货人信息
-		if orderDelivery.DeliveryId != nil && *orderDelivery.DeliveryId > 0 {
-			if txErr := tx.Save(&deliver).Error; txErr != nil {
-				return txErr
-			}
-		}
-		err = tx.Save(&orderDelivery).Error
-		if err != nil {
-			return err
-		}
-		if *order.GoodsArea == 0 { // 普通商品才能发放积分
-			// 发放积分
-			f := common.NewFinance(0, 6, user.ID, user.Username, order.GiftPoints, order.OrderSn, user.ID, user.Username, "确认收货发放积分")
-			err = common.AccountUnifyDeduction(common.POINT, f)
-			if err != nil {
-				global.SugarLog.Errorf("发放积分失败 UserFinance:%v, error: %v", f, err)
-				return err
-			}
+		if orderDelivery.ID != 0 {
+			return tx.Save(&orderDelivery).Error
 		}
 		return nil
 	})
-	return
 }
 
 // GetOrderDelivery 根据id获取OrderDelivery记录

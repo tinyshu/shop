@@ -124,7 +124,7 @@
             <view class="menu-btn" v-if="order.return && order.return.ID">
                 <u-button type="primary" :customStyle="menuBtnStyle" @click="confirmOrder">售后详情</u-button>
             </view>
-           <view class="menu-btn" v-if="order.status === 2">
+           <view class="menu-btn" v-if="order.status === 2 && order.statusCancel === 0">
                <u-button type="primary" :customStyle="menuBtnStyle" @click="() => confirmShow = true">确认收货</u-button>
            </view>
             <view class="menu-btn" v-if="order.status === 0 && order.statusCancel === 0">

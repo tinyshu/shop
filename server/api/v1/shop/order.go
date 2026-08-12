@@ -128,6 +128,35 @@ func (orderApi *OrderApi) CancelOrder(c *gin.Context) {
 	}
 }
 
+// ConfirmOrder 确认收货（C 端，入参订单主键 ID）
+// @Tags Order
+// @Summary 确认收货
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body shop.Order true "确认收货"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"确认收货成功"}"
+// @Router /order/confirmOrder [post]
+func (orderApi *OrderApi) ConfirmOrder(c *gin.Context) {
+	var order shop.Order
+	err := c.ShouldBindJSON(&order)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if order.ID == 0 {
+		response.FailWithMessage("订单ID不能为空", c)
+		return
+	}
+	userId := utils.GetUserID(c)
+	if err := orderService.ConfirmOrder(userId, order.ID); err != nil {
+		global.Log.Error("确认收货失败!", zap.Error(err))
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithMessage("确认收货成功", c)
+	}
+}
+
 // DeleteOrderByIds 批量删除Order
 // @Tags Order
 // @Summary 批量删除Order

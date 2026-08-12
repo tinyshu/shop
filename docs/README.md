@@ -18,7 +18,7 @@
 | [phase2-module-roadmap.md](./phase2-module-roadmap.md) | **二次开发细切片顺序、过关标准、与 todo-gaps 映射** ← 阶段二从这里推进 |
 | [features/industry-config/](./features/industry-config/) | M0 行业开关（v0.1.0～**v0.3.0 管理端** 已实现） |
 | [features/payment/](./features/payment/) | M1 支付：v0.1.0 / **v0.2.0 已实现**（条件更新+掉单查单） |
-| [features/fulfillment/](./features/fulfillment/) | M2 履约：v0.1.0 / **v0.2.0 已实现**（标记退款 + 发货/取消条件更新） |
+| [features/fulfillment/](./features/fulfillment/) | M2 履约：v0.1.0～**v0.3.0 已实现**（确认收货） |
 
 ## 学习路线
 
@@ -27,6 +27,7 @@
 | [learning-roadmap.md](./learning-roadmap.md) | **框架/代码学习顺序（按模块）** ← 学代码从这里看 |
 | [payment-reliability.md](./payment-reliability.md) | **支付异常现状与二次开发补全清单**（掉单/对账/退款等） |
 | [todo-gaps.md](./todo-gaps.md) | **功能缺失 / 待补 Todo**（含微信自动退款等，接单前对照） |
+| [order-id-vs-sn.md](./order-id-vs-sn.md) | **订单 `id` vs `order_sn`：数据迁移时主键重排风险** |
 | [debrand-checklist.md](./debrand-checklist.md) | **阶段二去品牌清单** |
 | [config-isolation.md](./config-isolation.md) | **每客户配置隔离（yaml / env / 小程序）** |
 | [smoke-scaffold.md](./smoke-scaffold.md) | **阶段二脚手架冒烟记录** |

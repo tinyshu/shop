@@ -18,7 +18,7 @@
 stateDiagram-v2
   [*] --> S1: 支付成功/月结建单/积分单
   S1 --> S2: createOrderDelivery 发货
-  S2 --> S3: updateOrderDelivery 确认收货
+  S2 --> S3: confirmOrder / updateOrderDelivery 确认收货
   S1 --> Cancel: cancelOrder（status<2）
   note right of S3: 普通单可发积分
 ```
@@ -139,6 +139,7 @@ erDiagram
 | 方法   | 路径                               | 用途                                            |
 | ---- | -------------------------------- | --------------------------------------------- |
 | POST | `/order/cancelOrder`             | 取消；`status>=2` 不允许                            |
+| POST | `/order/confirmOrder`            | C 端确认收货；`status=2 AND status_cancel=0` → `3`   |
 | POST | `/order/batchSettlement`         | 月结批量：某用户某月 `settlement_type 1→2`，并写 `payment` |
 | GET  | `/order/getOrderList` 等          | 列表可筛 status / 月结 / 售后(10)                     |
 | GET  | `/order/findUserOrderStatus`     | 各状态数量 + 月结统计                                  |
@@ -162,7 +163,7 @@ erDiagram
 
 ### 3.4 小程序注意
 
-`fresh-shop-uniapp/api/order.js` 里 `confirmOrder` 请求的是 `**/order/confirmOrder**`，后端 **没有** 该路由；真实收货接口是 `**PUT /orderDelivery/updateOrderDelivery`**。学习/二次开发时按后端为准，前端需对齐。
+小程序 `confirmOrder` 打 **`POST /order/confirmOrder`**（body `{ ID: 订单id }`）。**v0.3.0 已补齐该路由**（条件更新 `status=2→3`）。管理端仍走 `PUT /orderDelivery/updateOrderDelivery`。详见 [features/fulfillment/v0.3.0](./features/fulfillment/v0.3.0/)。
 
 ---
 
@@ -181,18 +182,12 @@ erDiagram
 
 行业色彩：用「配送员 + 预计到达」而不是快递单号——适合冻品城配；通用商城可改成物流公司 + 运单号。
 
-### 4.2 确认收货 `UpdateOrderDelivery`
+### 4.2 确认收货
 
-```text
-1. 查订单：status=2 AND status_cancel=0
-2. 若带了 delivery_id：配送员 deliver_count +1
-3. 若传了 receiptTime：
-   · 订单 status=3，receive_time=receiptTime
-4. 事务保存订单、配送员、delivery 记录
-5. goods_area==0：按 gift_points 发积分（账户流水）
-```
+C 端：`POST /order/confirmOrder`（`{ ID }`，服务端写 `receive_time=now`）。  
+管理端：`PUT /orderDelivery/updateOrderDelivery`（须带 `receiptTime` 才完结）。
 
-未传 `receiptTime` 时可能只更新配送信息而不完结订单——调用方要带齐字段。
+两边订单写入均为条件更新：`status=2 AND status_cancel=0` → `status=3`；有发货单则写 `receipt_time`，`delivery_id>0` 则 `deliver_count+1`；`goods_area==0` 且 `gift_points>0` 发积分。无 `receiptTime` 的管理端请求只改发货单、不完结订单。
 
 ### 4.3 取消 `CancelOrder`
 

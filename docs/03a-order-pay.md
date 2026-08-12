@@ -40,7 +40,7 @@ sequenceDiagram
 | 字段 | 类型 | 含义 |
 |------|------|------|
 | user_id | bigint | 下单用户 |
-| order_sn | varchar(50) | 订单号（如 `SN...`，回调按此对账） |
+| order_sn | varchar(50) | 订单号（如 `SN...`，回调按此对账）。**无 UNIQUE**；与自增 `id` 的迁移风险见 [order-id-vs-sn.md](./order-id-vs-sn.md) |
 | goods_area | tinyint | `0` 普通 / `1` 积分商城 |
 | shipment_name | varchar(20) | 收货人姓名（代码里可能拼先生/女士） |
 | shipment_mobile | varchar(11) | 收货手机 |
